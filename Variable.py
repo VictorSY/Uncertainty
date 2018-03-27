@@ -1,6 +1,6 @@
-from numpy import sqrt
-from numpy import std
 from decimal import Decimal as decimal
+
+from numpy import sqrt, std
 from sympy import sympify
 
 
@@ -8,7 +8,7 @@ class Variable:
     """This a a variable class that contains one of the manipulated variables in the equation"""
 
     @staticmethod
-    def __multiple_uncertainty():
+    def _multiple_uncertainty():
         while True:
             try:
                 number_of_values = int(input("Number of values? "))
@@ -29,7 +29,7 @@ class Variable:
         return std(value_sum)/sqrt(len(value_sum))
 
     @staticmethod
-    def __single_uncertainty(self, uncertainty_type):
+    def _single_uncertainty(self, uncertainty_type):
         while True:
             try:
                 value = float(input("Value: "))
@@ -45,7 +45,7 @@ class Variable:
             return (10**exponent) / (2 * sqrt(3))
 
     @staticmethod
-    def __calculate_uncertainty(self):
+    def _calculate_uncertainty(self):
         uncertainty_type = input("What kind of Uncertainty? (m for multiple, d for digital, a for analog): ")
         while uncertainty_type not in ["m", "d", "a"]:
             uncertainty_type = input("Unrecognized value, enter m for multiple, d for digital or a for analog: ")
@@ -67,7 +67,7 @@ class DerivedVariable(Variable):
         self.equation = self.__get_equation()
 
     @staticmethod
-    def __get_equation(self):
+    def _get_equation(self):
         while True:
             try:
                 equation = sympify(input("Enter the equation equal to your variable (ex. sqrt(arctan(x**5)):\n"))
@@ -77,4 +77,6 @@ class DerivedVariable(Variable):
             break
         return equation
 
-
+    def solve_for_variable(self, origianl_equation):
+        print("Solving for %s" % self.name)
+        # new_equation = solvers.
