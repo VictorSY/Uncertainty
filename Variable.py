@@ -63,10 +63,10 @@ class Variable:
 
 class DerivedVariable:
 
-    def __init__(self):
+    def __init__(self, known_variables):
         self.name = Symbol(input("Name of Variable: ").strip())
         self._get_equation()
-        self.values = solve_for_value(self.equation, )
+        self.values = solve_for_value(self.equation, known_variables, self.required_symbols)
 
     def _get_equation(self):
         while True:
@@ -89,7 +89,8 @@ class DerivedVariable:
             print("Inconsistent variable name or invalid equation!")
             self._get_equation()
 
-    def solve_for_value(self, equations, known_variables, required_symbols):
+    @staticmethod
+    def solve_for_value(equations, known_variables, required_symbols):
         # equations = self.equation
         for element in required_symbols:
             for variable in known_variables:
@@ -103,7 +104,8 @@ class DerivedVariable:
         for equation in equations:
             values.append(solve(equation))
             try:
-                float(values[-1])
+                for value in values:
+                    float(value)
             except ValueError:
                 print("Invalid Equation or Variables please restart the program.")
                 return False
