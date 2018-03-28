@@ -3,9 +3,11 @@ from decimal import Decimal
 from numpy import sqrt, std
 from sympy import sympify, Eq, Symbol, solve
 
+"""This a a variable and derived variable classes that contain one 
+    of the constants and manipulated variables of the equation"""
+
 
 class Variable:
-    """This a a variable class that contains one of the manipulated variables in the equation"""
 
     @staticmethod
     def _multiple_uncertainty():
@@ -29,7 +31,7 @@ class Variable:
         return std(value_sum)/sqrt(len(value_sum))
 
     @staticmethod
-    def _single_uncertainty(self, uncertainty_type):
+    def _single_uncertainty(uncertainty_type):
         while True:
             try:
                 value = float(input("Value: "))
@@ -44,15 +46,14 @@ class Variable:
             exponent = value.as_tuple().exponent()
             return (10**exponent) / (2 * sqrt(3))
 
-    @staticmethod
     def _calculate_uncertainty(self):
         uncertainty_type = input("What kind of Uncertainty? (m for multiple, d for digital, a for analog): ")
         while uncertainty_type not in ["m", "d", "a"]:
             uncertainty_type = input("Unrecognized value, enter m for multiple, d for digital or a for analog: ")
         if uncertainty_type is "m":
-            return self.__multiple_uncertainty()
+            return self._multiple_uncertainty()
         else:
-            return self.__single_uncertainty(uncertainty_type)
+            return self._single_uncertainty(uncertainty_type)
 
     def __init__(self):
         self.name = Symbol(input("Name of Variable: ").strip())
@@ -67,7 +68,6 @@ class DerivedVariable:
         self.solved = False
         self._get_equation()
 
-    @staticmethod
     def _get_equation(self):
         while True:
             try:
@@ -94,4 +94,5 @@ class DerivedVariable:
             if element not in known_variables:
                 return False
         self.solved = True
+        self.equation.sub()
         return True
