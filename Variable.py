@@ -1,7 +1,7 @@
-from decimal import Decimal as decimal
+from decimal import Decimal
 
 from numpy import sqrt, std
-from sympy import sympify
+from sympy import sympify, Eq, Symbol, solve
 
 
 class Variable:
@@ -40,7 +40,7 @@ class Variable:
         if uncertainty_type is "a":
             return value / (2 * sqrt(6))
         else:
-            value = decimal(str(value))
+            value = Decimal(str(value))
             exponent = value.as_tuple().exponent()
             return (10**exponent) / (2 * sqrt(3))
 
@@ -54,29 +54,44 @@ class Variable:
         else:
             return self.__single_uncertainty(uncertainty_type)
 
-    def __init__(self, variable_name, variable_value):
-        self.variable_name = variable_name
-        self.variable_value = variable_value
+    def __init__(self):
+        self.name = Symbol(input("Name of Variable: ").strip())
+        self.value = input("Value of Variable: ").strip()
         self.uncertainty = self.__calculate_uncertainty()
 
 
-class DerivedVariable(Variable):
+class DerivedVariable:
 
-    def __init__(self, name, value):
-        super().__init__(name, value)
-        self.equation = self.__get_equation()
+    def __init__(self):
+        self.name = Symbol(input("Name of Variable: ").strip())
+        self.solved = False
+        self._get_equation()
 
     @staticmethod
     def _get_equation(self):
         while True:
             try:
-                equation = sympify(input("Enter the equation equal to your variable (ex. sqrt(arctan(x**5)):\n"))
-            except:
-                print("Invalid equation.")
+                input_equation = input("Input equation: ")
+                equation_list = input_equation.split("=")
+                self.rhs = sympify(equation_list[1].strip())
+                self.lhs = sympify(equation_list[0].strip())
+            except IndexError:
+                print("Missing equals sign and or one side of the equation!")
+                continue
+            except (SyntaxError, NotImplementedError):
+                print("Equation in incorrect format!")
                 continue
             break
-        return equation
 
-    def solve_for_variable(self, origianl_equation):
-        print("Solving for %s" % self.name)
-        # new_equation = solvers.
+        self.equation = solve(Eq(self.lhs, self.rhs), Symbol(self.name))
+        self.required_symbols = self.equation.free_symbols.discard(self.name)
+        if len(self.required_symbols) < 1:
+            print("Inconsistent variable name or invalid equation!")
+            self._get_equation()
+
+    def solve_for_value(self, known_variables):
+        for element in self.required_symbols:
+            if element not in known_variables:
+                return False
+        self.solved = True
+        return True
