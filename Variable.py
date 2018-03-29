@@ -1,13 +1,18 @@
 from decimal import Decimal
 
 from numpy import sqrt, std
-from sympy import sympify, Eq, Symbol, solve
+from sympy import sympify, Eq, Symbol, solve, diff, Mul
 
 """This a a variable and derived variable classes that contain one 
     of the constants and manipulated variables of the equation"""
 
 
 class Variable:
+
+    def __init__(self):
+        self.name = Symbol(input("Name of Variable: ").strip())
+        self.value = input("Value of Variable: ").strip()
+        self.uncertainty = self.__calculate_uncertainty()
 
     @staticmethod
     def _multiple_uncertainty():
@@ -28,7 +33,7 @@ class Variable:
                     continue
                 break
             value_sum.append(value)
-        return std(value_sum)/sqrt(len(value_sum))
+        return std(value_sum) / sqrt(len(value_sum))
 
     @staticmethod
     def _single_uncertainty(uncertainty_type):
@@ -44,7 +49,7 @@ class Variable:
         else:
             value = Decimal(str(value))
             exponent = value.as_tuple().exponent()
-            return (10**exponent) / (2 * sqrt(3))
+            return (10 ** exponent) / (2 * sqrt(3))
 
     def _calculate_uncertainty(self):
         uncertainty_type = input("What kind of Uncertainty? (m for multiple, d for digital, a for analog): ")
@@ -55,18 +60,14 @@ class Variable:
         else:
             return self._single_uncertainty(uncertainty_type)
 
-    def __init__(self):
-        self.name = Symbol(input("Name of Variable: ").strip())
-        self.value = input("Value of Variable: ").strip()
-        self.uncertainty = self.__calculate_uncertainty()
-
 
 class DerivedVariable:
 
     def __init__(self, known_variables):
         self.name = Symbol(input("Name of Variable: ").strip())
         self._get_equation()
-        self.values = solve_for_value(self.equation, known_variables, self.required_symbols)
+        self.values, self.derivative_values = self.solve_for_value(self.equation, known_variables,
+                                                                   self.required_symbols)
 
     def _get_equation(self):
         while True:
@@ -89,9 +90,8 @@ class DerivedVariable:
             print("Inconsistent variable name or invalid equation!")
             self._get_equation()
 
-    @staticmethod
-    def solve_for_value(equations, known_variables, required_symbols):
-        # equations = self.equation
+    def solve_for_value(self, equations, known_variables, required_symbols):
+        diff_equations_og = equations
         for element in required_symbols:
             for variable in known_variables:
                 if element is variable.name:
@@ -102,11 +102,21 @@ class DerivedVariable:
                     return False
         values = []
         for equation in equations:
-            values.append(solve(equation))
-            try:
-                for value in values:
-                    float(value)
-            except ValueError:
-                print("Invalid Equation or Variables please restart the program.")
-                return False
-        return values
+            values.append(equation.evalf)
+        try:
+            for value in values:
+                float(value)
+        except ValueError:
+            print("Invalid Equation or Variables please restart the program.")
+            return False
+        diff_answers = []
+        for equation in diff_equations_og:
+            for variable in known_variables:
+                diff_answers.append((Mul(variable.uncertainty,
+                                         self.solve_for_value(diff(equation, variable),
+                                                              known_variables,
+                                                              required_symbols))).evalf())
+        sum_inside_sqrt = 0
+        for answer in diff_answers:
+            sum_inside_sqrt += answer * answer
+        return values, sqrt(sum_inside_sqrt)

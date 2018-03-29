@@ -1,16 +1,15 @@
-import Variable
+from Variable import *
 
 
 class Main:
     """This program is supposed to get the uncertainty."""
     def __init__(self):
+        self.constants = []
+        self.variables = []
         print("Welcome to the Uncertainty finding Program")
         self.get_constants_variables()
         self.get_variables()
 
-
-
-    @staticmethod
     def get_constants_variables(self):
         while True:
             try:
@@ -19,32 +18,15 @@ class Main:
                 continue
             break
         for const in range(number_of_constants):
-            name = input("Variable name: ")
-            while True:
-                try:
-                    value = float(input("Variable value: "))
-                except ValueError:
-                    print("Invalid Input!")
-                    continue
-                break
-            self.constants.append(Variable.Variable(name, value))
+            self.constants.append(Variable())
 
-    @staticmethod
     def get_variables(self):
         while True:
             try:
                 number_of_variables = int(input("How many variables: "))
             except ValueError:
+                print("Invalid Input!")
                 continue
             break
-        for const in range(number_of_variables):
-            name = input("Variable name: ")
-            while True:
-                try:
-                    value = float(input("Variable value: "))
-                except ValueError:
-                    print("Invalid Input!")
-                    continue
-                break
-            self.constants.append(Variable.DerivedVariable(name, value))
-
+        for variable in range(number_of_variables):
+            self.variables.append(DerivedVariable(self.constants))
