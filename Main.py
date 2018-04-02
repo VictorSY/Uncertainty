@@ -4,11 +4,13 @@ from Variable import *
 class Main:
     """This program is supposed to get the uncertainty."""
     def __init__(self):
-        self.constants = []
-        self.variables = []
+        self.known_variables = []
+        self.unknown_variables = []
         print("Welcome to the Uncertainty finding Program")
         self.get_constants_variables()
         self.get_variables()
+        for answering_round in range(25):
+            self.solve_unknowns()
 
     def get_constants_variables(self):
         while True:
@@ -18,7 +20,7 @@ class Main:
                 continue
             break
         for const in range(number_of_constants):
-            self.constants.append(Variable())
+            self.known_variables.append(Variable())
 
     def get_variables(self):
         while True:
@@ -29,4 +31,13 @@ class Main:
                 continue
             break
         for variable in range(number_of_variables):
-            self.variables.append(DerivedVariable(self.constants))
+            self.unknown_variables.append(DerivedVariable(self.known_variables))
+
+    def solve_unknowns(self):
+        for variable in self.unknown_variables:
+            variable.value, variable.derivative_values = variable.solve_for_values(variable.equation,
+                                                                                   self.known_variables,
+                                                                                   variable.required_symbols)
+            if variable.value is not None and variable.uncertainty is not None:
+                self.known_variables.append(variable)
+                self.unknown_variables.remove(variable)

@@ -1,4 +1,4 @@
-from sympy import sympify, solve, Symbol, Eq
+"""from sympy import sympify, solve, Symbol, Eq
 
 
 def equation_input():
@@ -25,4 +25,8 @@ print("Variables: %s" % equation.free_symbols)
 print(type(next(iter(equation.free_symbols))))
 eq_x = solve(equation, Symbol("x"))
 print(type(eq_x))
-print(eq_x)
+print(eq_x)"""
+
+from Main import Main
+
+main = Main()

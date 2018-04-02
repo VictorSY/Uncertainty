@@ -11,8 +11,15 @@ class Variable:
 
     def __init__(self):
         self.name = Symbol(input("Name of Variable: ").strip())
-        self.value = input("Value of Variable: ").strip()
-        self.uncertainty = self.__calculate_uncertainty()
+        while True:
+            try:
+                self.value = float(input("Value of Variable: ").strip())
+            except ValueError:
+                print("Invalid Input!")
+                continue
+            break
+
+        self.uncertainty = self._calculate_uncertainty()
 
     @staticmethod
     def _multiple_uncertainty():
@@ -39,7 +46,7 @@ class Variable:
     def _single_uncertainty(uncertainty_type):
         while True:
             try:
-                value = float(input("Value: "))
+                value = float(input("a value: "))
             except ValueError:
                 print("Invalid Input!")
                 continue
@@ -47,8 +54,8 @@ class Variable:
         if uncertainty_type is "a":
             return value / (2 * sqrt(6))
         else:
-            value = Decimal(str(value))
-            exponent = value.as_tuple().exponent()
+            decimal_value = Decimal(str(value))
+            exponent = decimal_value.as_tuple().exponent()
             return (10 ** exponent) / (2 * sqrt(3))
 
     def _calculate_uncertainty(self):
@@ -64,10 +71,15 @@ class Variable:
 class DerivedVariable:
 
     def __init__(self, known_variables):
+        self.required_symbols = None
+        self.equation = None
         self.name = Symbol(input("Name of Variable: ").strip())
         self._get_equation()
-        self.values, self.derivative_values = self.solve_for_value(self.equation, known_variables,
+        try:
+            self.values, self.derivative_values = self.solve_for_value(self.equation, known_variables,
                                                                    self.required_symbols)
+        except TypeError:
+            pass
 
     def _get_equation(self):
         while True:
@@ -99,7 +111,7 @@ class DerivedVariable:
                         equation.subs(variable.name, variable.value)
                     break
                 if element is not variable.name and variable is known_variables[-1]:
-                    return False
+                    return None, None
         values = []
         for equation in equations:
             values.append(equation.evalf)
@@ -108,7 +120,7 @@ class DerivedVariable:
                 float(value)
         except ValueError:
             print("Invalid Equation or Variables please restart the program.")
-            return False
+            return None, None
         diff_answers = []
         for equation in diff_equations_og:
             for variable in known_variables:
