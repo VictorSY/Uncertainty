@@ -42,8 +42,7 @@ class Variable:
             value_sum.append(value)
         return std(value_sum) / sqrt(len(value_sum))
 
-    @staticmethod
-    def _single_uncertainty(uncertainty_type):
+    def _single_uncertainty(self, uncertainty_type):
         while True:
             try:
                 value = float(input("a value: "))
@@ -54,7 +53,7 @@ class Variable:
         if uncertainty_type is "a":
             return value / (2 * sqrt(6))
         else:
-            decimal_value = Decimal(str(value))
+            decimal_value = Decimal(str(self.value))
             exponent = decimal_value.as_tuple().exponent()
             return (10 ** exponent) / (2 * sqrt(3))
 
