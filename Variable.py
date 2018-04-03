@@ -43,18 +43,17 @@ class Variable:
         return std(value_sum) / sqrt(len(value_sum))
 
     def _single_uncertainty(self, uncertainty_type):
-        while True:
-            try:
-                value = float(input("a value: "))
-            except ValueError:
-                print("Invalid Input!")
-                continue
-            break
         if uncertainty_type is "a":
+            while True:
+                try:
+                    value = float(input("a value: "))
+                except ValueError:
+                    print("Invalid Input!")
+                    continue
+                break
             return value / (2 * sqrt(6))
         else:
-            decimal_value = Decimal(str(self.value))
-            exponent = decimal_value.as_tuple().exponent()
+            exponent = Decimal(str(self.value)).as_tuple()[2]
             return (10 ** exponent) / (2 * sqrt(3))
 
     def _calculate_uncertainty(self):
@@ -76,7 +75,7 @@ class DerivedVariable:
         self._get_equation()
         try:
             self.values, self.derivative_values = self.solve_for_value(self.equation, known_variables,
-                                                                   self.required_symbols)
+                                                                       self.required_symbols)
         except TypeError:
             pass
 
@@ -94,14 +93,20 @@ class DerivedVariable:
                 print("Equation in incorrect format!")
                 continue
             break
-
-        self.equation = solve(Eq(self.lhs, self.rhs), Symbol(self.name))
-        self.required_symbols = self.equation.free_symbols.discard(self.name)
+        original_equation = Eq(self.lhs, self.rhs)
+        # Will resolve multiple equations later
+        self.equation = solve(original_equation, self.name)[0]
+        # self.required_symbols = original_equation.canonical_variables.discard(self.name)
+        print(self.rhs.free_symbols, " ", self.lhs.free_symbols)
+        self.required_symbols = self.rhs.free_symbols.union(self.lhs.free_symbols)
+        print(self.required_symbols)
+        print(type(self.required_symbols))
+        print(type(self.required_symbols), self.required_symbols)
         if len(self.required_symbols) < 1:
             print("Inconsistent variable name or invalid equation!")
             self._get_equation()
 
-    def solve_for_value(self, equations, known_variables, required_symbols):
+    def solve_for_value(self, equations, known_variables, required_symbols: set):
         diff_equations_og = equations
         for element in required_symbols:
             for variable in known_variables:

@@ -35,9 +35,12 @@ class Main:
 
     def solve_unknowns(self):
         for variable in self.unknown_variables:
-            variable.value, variable.derivative_values = variable.solve_for_values(variable.equation,
-                                                                                   self.known_variables,
-                                                                                   variable.required_symbols)
+            variable.value, variable.derivative_values = variable.solve_for_value(variable.equation,
+                                                                                  self.known_variables,
+                                                                                  variable.required_symbols)
             if variable.value is not None and variable.uncertainty is not None:
                 self.known_variables.append(variable)
                 self.unknown_variables.remove(variable)
+
+
+Main()
