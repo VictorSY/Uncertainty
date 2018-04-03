@@ -1,3 +1,4 @@
+from copy import deepcopy
 from decimal import Decimal
 
 from numpy import sqrt, std
@@ -76,7 +77,8 @@ class DerivedVariable:
         try:
             self.values, self.derivative_values = self.solve_for_value(self.equation, known_variables,
                                                                        self.required_symbols)
-        except TypeError:
+        except TypeError as e:
+            print(e)
             pass
 
     def _get_equation(self):
@@ -94,34 +96,37 @@ class DerivedVariable:
                 continue
             break
         original_equation = Eq(self.lhs, self.rhs)
-        # Will resolve multiple equations later
-        self.equation = solve(original_equation, self.name)[0]
-        # self.required_symbols = original_equation.canonical_variables.discard(self.name)
-        print(self.rhs.free_symbols, " ", self.lhs.free_symbols)
+        self.equation = solve(original_equation, self.name)
+        print(self.rhs.free_symbols, self.lhs.free_symbols)
+        # self.required_symbols = self.rhs.free_symbols.union(self.lhs.free_symbols).discard(self.name)
         self.required_symbols = self.rhs.free_symbols.union(self.lhs.free_symbols)
-        print(self.required_symbols)
-        print(type(self.required_symbols))
+        self.required_symbols.remove(self.name)
+        print(self.required_symbols, type(self.required_symbols))
         print(type(self.required_symbols), self.required_symbols)
-        if len(self.required_symbols) < 1:
+        if len(self.required_symbols) < 1 or len(self.equation) < 1:
             print("Inconsistent variable name or invalid equation!")
             self._get_equation()
 
-    def solve_for_value(self, equations, known_variables, required_symbols: set):
-        diff_equations_og = equations
+    def solve_for_value(self, equations: list, known_variables: list, required_symbols: set):
+        diff_equations_og = deepcopy(equations)
         for element in required_symbols:
             for variable in known_variables:
                 if element is variable.name:
+                    print(equations)
                     for equation in equations:
-                        equation.subs(variable.name, variable.value)
+                        equations.remove(equation)
+                        equations.insert(0, equation.subs(variable.name, variable.value))
                     break
                 if element is not variable.name and variable is known_variables[-1]:
                     return None, None
         values = []
         for equation in equations:
-            values.append(equation.evalf)
+            values.append(equation.evalf())
+            print(equation.evalf())
         try:
             for value in values:
-                float(value)
+                print(value)
+                # float(value)
         except ValueError:
             print("Invalid Equation or Variables please restart the program.")
             return None, None
@@ -129,10 +134,11 @@ class DerivedVariable:
         for equation in diff_equations_og:
             for variable in known_variables:
                 diff_answers.append((Mul(variable.uncertainty,
-                                         self.solve_for_value(diff(equation, variable),
+                                         self.solve_for_value(diff(equation, variable.name),
                                                               known_variables,
                                                               required_symbols))).evalf())
         sum_inside_sqrt = 0
         for answer in diff_answers:
             sum_inside_sqrt += answer * answer
         return values, sqrt(sum_inside_sqrt)
+
