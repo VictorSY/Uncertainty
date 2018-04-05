@@ -11,6 +11,8 @@ class Main:
         self.get_constants_variables()
         self.get_variables()
         for answering_round in range(25):
+            if len(self.unknown_variables) is 0:
+                break
             self.solve_unknowns()
             print("Answering round", answering_round)
         self.print_variables()
@@ -39,13 +41,14 @@ class Main:
 
     def solve_unknowns(self):
         for variable in self.unknown_variables:
-            variable.value, variable.uncertainty = variable.solve_for_value(variable.equation,
-                                                                            self.known_variables,
-                                                                            variable.required_symbols)
-            if variable.value is not None:  # and variable.uncertainty is not None:
+            if variable.value is not None:
                 print("Added", variable.name)
                 self.known_variables.append(variable)
                 self.unknown_variables.remove(variable)
+                continue
+            variable.value, variable.uncertainty = variable.solve_for_value(variable.equation,
+                                                                            self.known_variables,
+                                                                            variable.required_symbols)
 
     def print_variables(self):
         for variable in self.known_variables:

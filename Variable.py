@@ -76,8 +76,8 @@ class DerivedVariable:
         self.name = Symbol(input("Name of Variable: ").strip())
         self._get_equation()
         try:
-            self.values, self.uncertainty = self.solve_for_value(self.equation, known_variables,
-                                                                 self.required_symbols)
+            self.value, self.uncertainty = self.solve_for_value(self.equation, known_variables,
+                                                                self.required_symbols)
         except TypeError as e:
             print(e)
             pass
@@ -122,13 +122,6 @@ class DerivedVariable:
         for equation in equations:
             values.append(equation)
             print(equation)
-        """try:
-            for value in values:
-                print(value)
-                # float(value)
-        except ValueError:
-            print("Invalid Equation or Variables please restart the program.")
-            return None, None"""
         if need_diff:
             diff_answers = []
             for equation in diff_equations_og:
@@ -142,7 +135,7 @@ class DerivedVariable:
                                                                  False)[0]))
             sum_inside_sqrt = 0
             for answer in diff_answers:
-                sum_inside_sqrt += answer * answer
+                sum_inside_sqrt += answer ** 2
             print("Uncertainty for derived variable", sum_inside_sqrt ** 0.5)
-            return values, sum_inside_sqrt ** 0.5
+            return values[0], sum_inside_sqrt ** 0.5
         return values
