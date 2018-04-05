@@ -12,6 +12,7 @@ class Variable:
 
     def __init__(self):
         self.name = Symbol(input("Name of Variable: ").strip())
+
         while True:
             try:
                 self.value = float(input("Value of Variable: ").strip())
@@ -75,8 +76,8 @@ class DerivedVariable:
         self.name = Symbol(input("Name of Variable: ").strip())
         self._get_equation()
         try:
-            self.values, self.derivative_values = self.solve_for_value(self.equation, known_variables,
-                                                                       self.required_symbols)
+            self.values, self.uncertainty = self.solve_for_value(self.equation, known_variables,
+                                                                 self.required_symbols)
         except TypeError as e:
             print(e)
             pass
@@ -97,48 +98,51 @@ class DerivedVariable:
             break
         original_equation = Eq(self.lhs, self.rhs)
         self.equation = solve(original_equation, self.name)
-        print(self.rhs.free_symbols, self.lhs.free_symbols)
-        # self.required_symbols = self.rhs.free_symbols.union(self.lhs.free_symbols).discard(self.name)
         self.required_symbols = self.rhs.free_symbols.union(self.lhs.free_symbols)
         self.required_symbols.remove(self.name)
-        print(self.required_symbols, type(self.required_symbols))
-        print(type(self.required_symbols), self.required_symbols)
         if len(self.required_symbols) < 1 or len(self.equation) < 1:
             print("Inconsistent variable name or invalid equation!")
             self._get_equation()
 
-    def solve_for_value(self, equations: list, known_variables: list, required_symbols: set):
-        diff_equations_og = deepcopy(equations)
+    def solve_for_value(self, equations: list, known_variables: list, required_symbols: set, need_diff=True):
+        if need_diff:
+            diff_equations_og = deepcopy(equations)
         for element in required_symbols:
             for variable in known_variables:
                 if element is variable.name:
                     print(equations)
                     for equation in equations:
                         equations.remove(equation)
-                        equations.insert(0, equation.subs(variable.name, variable.value))
+                        equation = equation.subs(variable.name, variable.value)
+                        equations.insert(0, equation)
                     break
                 if element is not variable.name and variable is known_variables[-1]:
                     return None, None
         values = []
         for equation in equations:
-            values.append(equation.evalf())
-            print(equation.evalf())
-        try:
+            values.append(equation)
+            print(equation)
+        """try:
             for value in values:
                 print(value)
                 # float(value)
         except ValueError:
             print("Invalid Equation or Variables please restart the program.")
-            return None, None
-        diff_answers = []
-        for equation in diff_equations_og:
-            for variable in known_variables:
-                diff_answers.append((Mul(variable.uncertainty,
-                                         self.solve_for_value(diff(equation, variable.name),
-                                                              known_variables,
-                                                              required_symbols))).evalf())
-        sum_inside_sqrt = 0
-        for answer in diff_answers:
-            sum_inside_sqrt += answer * answer
-        return values, sqrt(sum_inside_sqrt)
+            return None, None"""
+        if need_diff:
+            diff_answers = []
+            for equation in diff_equations_og:
+                for variable in known_variables:
+                    diff_equation = diff(equation, variable.name)
 
+                    diff_answers.append(Mul(variable.uncertainty,
+                                            self.solve_for_value([diff_equation],
+                                                                 known_variables,
+                                                                 required_symbols,
+                                                                 False)[0]))
+            sum_inside_sqrt = 0
+            for answer in diff_answers:
+                sum_inside_sqrt += answer * answer
+            print("Uncertainty for derived variable", sum_inside_sqrt ** 0.5)
+            return values, sum_inside_sqrt ** 0.5
+        return values

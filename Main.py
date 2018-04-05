@@ -3,6 +3,7 @@ from Variable import *
 
 class Main:
     """This program is supposed to get the uncertainty."""
+
     def __init__(self):
         self.known_variables = []
         self.unknown_variables = []
@@ -38,9 +39,9 @@ class Main:
 
     def solve_unknowns(self):
         for variable in self.unknown_variables:
-            variable.value, variable.derivative_values = variable.solve_for_value(variable.equation,
-                                                                                  self.known_variables,
-                                                                                  variable.required_symbols)
+            variable.value, variable.uncertainty = variable.solve_for_value(variable.equation,
+                                                                            self.known_variables,
+                                                                            variable.required_symbols)
             if variable.value is not None:  # and variable.uncertainty is not None:
                 print("Added", variable.name)
                 self.known_variables.append(variable)
@@ -51,4 +52,6 @@ class Main:
             print(variable.name)
             print("Value:", variable.value)
             print("Uncertainty:", variable.uncertainty)
+
+
 Main()
