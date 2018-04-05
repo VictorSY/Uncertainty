@@ -12,23 +12,15 @@ class Variable:
 
     def __init__(self):
         self.name = Symbol(input("Name of Variable: ").strip())
-
-        while True:
-            try:
-                self.value = float(input("Value of Variable: ").strip())
-            except ValueError:
-                print("Invalid Input!")
-                continue
-            break
-
+        self.value = None
         self.uncertainty = self._calculate_uncertainty()
 
-    @staticmethod
-    def _multiple_uncertainty():
+    def _multiple_uncertainty(self):
         while True:
             try:
                 number_of_values = int(input("Number of values? "))
-            except ValueError:
+            except ValueError as e:
+                print(e)
                 print("Invalid Input!")
                 continue
             break
@@ -37,19 +29,30 @@ class Variable:
             while True:
                 try:
                     value = float(input("Value: "))
-                except ValueError:
+                except ValueError as e:
+                    print(e)
                     print("Invalid Input!")
                     continue
                 break
             value_sum.append(value)
+            self.value = sum(value_sum) / len(value_sum)
         return std(value_sum) / sqrt(len(value_sum))
 
     def _single_uncertainty(self, uncertainty_type):
+        while True:
+            try:
+                self.value = float(input("Value of Variable: ").strip())
+            except ValueError as e:
+                print(e)
+                print("Invalid Input!")
+                continue
+            break
         if uncertainty_type is "a":
             while True:
                 try:
                     value = float(input("a value: "))
-                except ValueError:
+                except ValueError as e:
+                    print(e)
                     print("Invalid Input!")
                     continue
                 break
@@ -89,10 +92,12 @@ class DerivedVariable:
                 equation_list = input_equation.split("=")
                 self.rhs = sympify(equation_list[1].strip())
                 self.lhs = sympify(equation_list[0].strip())
-            except IndexError:
+            except IndexError as e:
+                print(e)
                 print("Missing equals sign and or one side of the equation!")
                 continue
-            except (SyntaxError, NotImplementedError):
+            except (SyntaxError, NotImplementedError)as e:
+                print(e)
                 print("Equation in incorrect format!")
                 continue
             break
@@ -110,7 +115,6 @@ class DerivedVariable:
         for element in required_symbols:
             for variable in known_variables:
                 if element is variable.name:
-                    print(equations)
                     for equation in equations:
                         equations.remove(equation)
                         equation = equation.subs(variable.name, variable.value)
@@ -121,7 +125,6 @@ class DerivedVariable:
         values = []
         for equation in equations:
             values.append(equation)
-            print(equation)
         if need_diff:
             diff_answers = []
             for equation in diff_equations_og:
@@ -136,6 +139,5 @@ class DerivedVariable:
             sum_inside_sqrt = 0
             for answer in diff_answers:
                 sum_inside_sqrt += answer ** 2
-            print("Uncertainty for derived variable", sum_inside_sqrt ** 0.5)
             return values[0], sum_inside_sqrt ** 0.5
         return values

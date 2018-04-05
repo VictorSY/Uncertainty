@@ -14,14 +14,15 @@ class Main:
             if len(self.unknown_variables) is 0:
                 break
             self.solve_unknowns()
-            print("Answering round", answering_round)
+            # print("Answering round", answering_round)
         self.print_variables()
 
     def get_constants_variables(self):
         while True:
             try:
                 number_of_constants = int(input("How many measured variables: "))
-            except ValueError:
+            except ValueError as e:
+                print(e)
                 continue
             break
         for const in range(number_of_constants):
@@ -31,7 +32,8 @@ class Main:
         while True:
             try:
                 number_of_variables = int(input("How many derived variables: "))
-            except ValueError:
+            except ValueError as e:
+                print(e)
                 print("Invalid Input!")
                 continue
             break
