@@ -44,7 +44,6 @@ class Variable:
                 self.value = float(input("Value of Variable: ").strip())
             except ValueError as e:
                 print(e)
-                print("Invalid Input!")
                 continue
             break
         if uncertainty_type is "a":
@@ -57,14 +56,21 @@ class Variable:
                     continue
                 break
             return value / (2 * sqrt(6))
+        elif uncertainty_type is "u":
+            try:
+                self.uncertainty = float(input("Uncertainty: ").strip())
+            except ValueError as e:
+                print(e)
         else:
             exponent = Decimal(str(self.value)).as_tuple()[2]
             return (10 ** exponent) / (2 * sqrt(3))
 
     def _calculate_uncertainty(self):
-        uncertainty_type = input("What kind of Uncertainty? (m for multiple, d for digital, a for analog): ")
-        while uncertainty_type not in ["m", "d", "a"]:
-            uncertainty_type = input("Unrecognized value, enter m for multiple, d for digital or a for analog: ")
+        uncertainty_type = input("What kind of Uncertainty? (m for multiple, d for digital, a for analog,\n"
+                                 "u for uncertainty you already know): ")
+        while uncertainty_type not in ["m", "d", "a", "u"]:
+            uncertainty_type = input("Unrecognized value, (m for multiple, d for digital, a for analog,\n"
+                                     "u for uncertainty you already know): ")
         if uncertainty_type is "m":
             return self._multiple_uncertainty()
         else:

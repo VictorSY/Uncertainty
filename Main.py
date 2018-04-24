@@ -101,7 +101,6 @@ class Main:
             break
         for variable in range(number_of_variables):
             self.unknown_variables.append(DerivedVariable(self.known_variables))
-        print(self.unknown_variables)
 
     def solve_unknowns(self):
         for variable in self.unknown_variables:
